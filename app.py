@@ -6,64 +6,80 @@ import streamlit as st
 load_dotenv()
 guidance.llm = guidance.llms.OpenAI("text-davinci-003") 
 
+def generate_prompt(query):
+    prompt_generator = guidance(
+    '''
+    {{#block hidden=True~}}
+    You are a world class prompt generator; Your goal is to generate a prompt that can be used for other LLMs;
+
+    Here is the query: {{query}}
+    Prompt: {{gen 'prompt'}}
+    {{/block~}}
+
+    {{prompt}}
+    ''')
+
+    prompt = prompt_generator(query=query)
+    print(prompt)
+    
+    return prompt
+
 def generate_email(email):        
     priorities = ["low priority", "medium priority", "high priority"]
 
     email_generator = guidance(
-'''    
-{{#block hidden=True~}}
-Here is the customer message we received: {{email}}
-Please give it a priority score 
-priority score: {{select "priority" options=priorities}}
-{{~/block~}}
-            
-{{#block hidden=True~}}
-You are a world class customer support; Your goal is to generate an response based on the customer message and next steps;
-Here is the customer message to respond: {{email}}
-Generate an opening & one paragraph of response to the customer message at {{priority}}:
-{{gen 'email'}} 
-{{~/block~}}
+    '''    
+    {{#block hidden=True~}}
+    Here is the customer message we received: {{email}}
+    Please give it a priority score 
+    priority score: {{select "priority" options=priorities}}
+    {{~/block~}}
+                
+    {{#block hidden=True~}}
+    You are a world class customer support; Your goal is to generate an response based on the customer message and next steps;
+    Here is the customer message to respond: {{email}}
+    Generate an opening & one paragraph of response to the customer message at {{priority}}:
+    {{gen 'email'}} 
+    {{~/block~}}
 
-{{email}}
+    {{email}}
 
-{{#if priority=='high priority'}}Would love to setup a call this/next week, here is the calendly link: https://calendly.com/jason-zhou{{/if}}
+    {{#if priority=='high priority'}}Would love to setup a call this/next week, here is the calendly link: https://calendly.com/janik-dotzel{{/if}}
 
-Best regards
+    Best regards
 
-Jason
-''')
+    Janik
+    ''')
 
     email_response = email_generator(email=email, priorities=priorities)
     print(email_response)
 
     return email_response
 
-    
-
 def generate_story(story_idea):
         
     story = guidance('''
-{{#block hidden=True~}}
-You are a world class story teller; Your goal is to generate a short tiny story less than 200 words based on a story idea;
+    {{#block hidden=True~}}
+    You are a world class story teller; Your goal is to generate a short tiny story less than 200 words based on a story idea;
 
-Here is the story idea: {{story_idea}}
-Story: {{gen 'story' temperature=0}}
-{{/block~}}
+    Here is the story idea: {{story_idea}}
+    Story: {{gen 'story' temperature=0}}
+    {{/block~}}
 
-{{#block hidden=True~}}
-You are a world class AI artiest who are great at generating text to image prompts for the story; 
-Your goal is to generate a good text to image prompt and put it in a url that can generate image from the prompt;
+    {{#block hidden=True~}}
+    You are a world class AI artiest who are great at generating text to image prompts for the story; 
+    Your goal is to generate a good text to image prompt and put it in a url that can generate image from the prompt;
 
-Story: You find yourself standing on the deck of a pirate ship in the middle of the ocean. You are checking if there are still people on the ship
-Image url markdown: ![Image](https://image.pollinations.ai/prompt/a%203d%20render%20of%20a%20man%20standing%20on%20the%20deck%20of%20a%20pirate%20ship%20in%20the%20middle%20of%20the%20ocean)
-                
-Story: {{story}}
-Image url markdown: {{gen 'image_url' temperature=0 max_tokens=500}})
-{{~/block~}}
-                     
-Story: {{~story~}}
-{{image_url}}
-''')
+    Story: You find yourself standing on the deck of a pirate ship in the middle of the ocean. You are checking if there are still people on the ship
+    Image url markdown: ![Image](https://image.pollinations.ai/prompt/a%203d%20render%20of%20a%20man%20standing%20on%20the%20deck%20of%20a%20pirate%20ship%20in%20the%20middle%20of%20the%20ocean)
+                    
+    Story: {{story}}
+    Image url markdown: {{gen 'image_url' temperature=0 max_tokens=500}})
+    {{~/block~}}
+                        
+    Story: {{~story~}}
+    {{image_url}}
+    ''')
 
     story = story(story_idea=story_idea)
     print(story)
@@ -111,33 +127,69 @@ def generate_chart(query):
 
     return chart(query=query, examples=examples, parse_chart_link=parse_chart_link)
 
+def generate_image(query):
+        
+    image_generator = guidance('''
+    {{#block hidden=True~}}
+    You are a world class AI artiest who are great at generating text to image prompts for the story; 
+    Your goal is to generate a good text to image prompt and put it in a url that can generate image from the prompt;
 
+    Story: You find yourself standing on the deck of a pirate ship in the middle of the ocean. You are checking if there are still people on the ship
+    Image url: https://image.pollinations.ai/prompt/a%203d%20render%20of%20a%20man%20standing%20on%20the%20deck%20of%20a%20pirate%20ship%20in%20the%20middle%20of%20the%20ocean
+                    
+    Story: {{query}}
+    Image url: {{gen 'image_url' temperature=0 max_tokens=500}})
+    {{~/block~}}
+
+    {{image_url}}
+    ''')
+
+    image_url = str(image_generator(query=query))    
+    print(image_url)
+    
+    return image_url
 
 def main():
-    st.set_page_config(page_title="Programmable prompts", page_icon=":bird:")
+    st.set_page_config(page_title="Content Generator", page_icon="☁️")
 
-    tab1, tab2, tab3 = st.tabs(["Chart generator", "Story generator", "generate email"])  
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Prompt Generator", "Chart Generator", "Story Generator", "Email Generator", "Image Generator"])  
 
     with tab1:
-        st.header("Chart generator")
-        prompt = st.text_input("Enter a query")
+        st.header("Prompt Generator")
+        prompt = st.text_input("Enter a query of the prompt you want to generate.")
+        if prompt:
+            genereated_prompt = generate_prompt(prompt)            
+            st.markdown(genereated_prompt)
+
+    with tab2:
+        st.header("Chart Generator")
+        prompt = st.text_input("Enter a query of the chart you want to generate.")
         if prompt:
             chart = generate_chart(prompt)            
             st.markdown(chart)
     
-    with tab2:
-        st.header("Story generator")
-        prompt = st.text_input("Enter a story idea")
+    with tab3:
+        st.header("Story Generator")
+        prompt = st.text_input("Enter a story idea to generate a story.")
         if prompt:
             story = generate_story(prompt)            
             st.markdown(story)
 
-    with tab3:
-        st.header("Email generator")
-        email = st.text_area("Customer email to respond")
-        if email:
-            email_response = generate_email(email)            
+    with tab4:
+        st.header("Email Generator")
+        prompt = st.text_area("Enter a customer email to generate a response.")
+        if prompt:
+            email_response = generate_email(prompt)            
             st.write(email_response)  
+
+    with tab5:
+        st.header("Image Generator")
+        prompt = st.text_area("Enter a prompt to generate an image.")
+        if prompt:
+            image = generate_image(prompt)            
+            st.image(image)      
+
+    # TODO: Create a Tweet Generator
 
 if __name__ == '__main__':
     main()
