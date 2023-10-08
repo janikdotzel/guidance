@@ -148,12 +148,54 @@ def generate_image(query):
     
     return image_url
 
+def generate_tweet(query):        
+    tweet_generator = guidance(
+    '''    
+    {{#block hidden=True~}}
+    You are a world class marketing genius. You excel through your twitter markeing. You write tweets that drive engagement.
+    Your goal is to generate a tweet based on a query.
+    Here is the query: {{query}}
+    Generate a text for a tweet. Make sure it follows the rules of a tweet like max characters, etc.:
+    {{gen 'tweet'}} 
+    {{~/block~}}
+                
+    {{tweet}}
+    ''')
+
+    ratings = ["bad tweet", "medium tweet", "great tweet"]
+
+    tweet_reviewer = guidance(
+    '''
+    {{#block hidden=True~}}
+    You are a world class marketing genius. You excel through your twitter markeing. You write tweets that drive engagement.
+    Here is the tweet that we received and you should rate: {{tweet}}
+    Please rate it.  
+    Rating: {{select "rating" options=ratings}}
+    
+    {{rating}}
+    {{~/block~}}
+    ''')
+
+    # Generate multiple drafts of a tweet based on the query and rate each draft using tweet_reviewer.
+    # If a draft receives a "great tweet" rating, select it as the final tweet.
+    # If none of the drafts receive a "great tweet" rating, select the last draft as the final tweet.
+    for _ in range(5):
+        draft = tweet_generator(query=query)
+        rating = tweet_reviewer(tweet=draft, ratings=ratings)
+        if rating == "great tweet":
+            tweet = draft
+            break
+    else:
+        tweet = draft
+
+    print(tweet)
+    return tweet
 
 
 def main():
     st.set_page_config(page_title="Content Generator", page_icon="☁️")
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Prompt Generator", "Chart Generator", "Story Generator", "Email Generator", "Image Generator"])  
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Prompt Generator", "Chart Generator", "Story Generator", "Email Generator", "Image Generator", "Tweet Generator"])  
 
     with tab1:
         st.header("Prompt Generator")
@@ -188,9 +230,14 @@ def main():
         prompt = st.text_area("Enter a prompt to generate an image.")
         if prompt:
             image = generate_image(prompt)            
-            st.image(image)      
+            st.image(image)  
 
-    # TODO: Create a Tweet Generator
+    with tab6:
+        st.header("Tweet Generator")
+        prompt = st.text_input("Enter a query of the tweet you want to generate.")
+        if prompt:
+            tweet = generate_tweet(prompt)            
+            st.markdown(tweet)
 
 if __name__ == '__main__':
     main()
