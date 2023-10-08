@@ -24,68 +24,6 @@ def generate_prompt(query):
     
     return prompt
 
-def generate_email(email):        
-    priorities = ["low priority", "medium priority", "high priority"]
-
-    email_generator = guidance(
-    '''    
-    {{#block hidden=True~}}
-    Here is the customer message we received: {{email}}
-    Please give it a priority score 
-    priority score: {{select "priority" options=priorities}}
-    {{~/block~}}
-                
-    {{#block hidden=True~}}
-    You are a world class customer support; Your goal is to generate an response based on the customer message and next steps;
-    Here is the customer message to respond: {{email}}
-    Generate an opening & one paragraph of response to the customer message at {{priority}}:
-    {{gen 'email'}} 
-    {{~/block~}}
-
-    {{email}}
-
-    {{#if priority=='high priority'}}Would love to setup a call this/next week, here is the calendly link: https://calendly.com/janik-dotzel{{/if}}
-
-    Best regards
-
-    Janik
-    ''')
-
-    email_response = email_generator(email=email, priorities=priorities)
-    print(email_response)
-
-    return email_response
-
-def generate_story(story_idea):
-        
-    story = guidance('''
-    {{#block hidden=True~}}
-    You are a world class story teller; Your goal is to generate a short tiny story less than 200 words based on a story idea;
-
-    Here is the story idea: {{story_idea}}
-    Story: {{gen 'story' temperature=0}}
-    {{/block~}}
-
-    {{#block hidden=True~}}
-    You are a world class AI artiest who are great at generating text to image prompts for the story; 
-    Your goal is to generate a good text to image prompt and put it in a url that can generate image from the prompt;
-
-    Story: You find yourself standing on the deck of a pirate ship in the middle of the ocean. You are checking if there are still people on the ship
-    Image url markdown: ![Image](https://image.pollinations.ai/prompt/a%203d%20render%20of%20a%20man%20standing%20on%20the%20deck%20of%20a%20pirate%20ship%20in%20the%20middle%20of%20the%20ocean)
-                    
-    Story: {{story}}
-    Image url markdown: {{gen 'image_url' temperature=0 max_tokens=500}})
-    {{~/block~}}
-                        
-    Story: {{~story~}}
-    {{image_url}}
-    ''')
-
-    story = story(story_idea=story_idea)
-    print(story)
-    return story
-
-
 def generate_chart(query):
     
     def parse_chart_link(chart_details):
@@ -127,6 +65,67 @@ def generate_chart(query):
 
     return chart(query=query, examples=examples, parse_chart_link=parse_chart_link)
 
+def generate_story(story_idea):
+        
+    story = guidance('''
+    {{#block hidden=True~}}
+    You are a world class story teller; Your goal is to generate a short tiny story less than 200 words based on a story idea;
+
+    Here is the story idea: {{story_idea}}
+    Story: {{gen 'story' temperature=0}}
+    {{/block~}}
+
+    {{#block hidden=True~}}
+    You are a world class AI artiest who are great at generating text to image prompts for the story; 
+    Your goal is to generate a good text to image prompt and put it in a url that can generate image from the prompt;
+
+    Story: You find yourself standing on the deck of a pirate ship in the middle of the ocean. You are checking if there are still people on the ship
+    Image url markdown: ![Image](https://image.pollinations.ai/prompt/a%203d%20render%20of%20a%20man%20standing%20on%20the%20deck%20of%20a%20pirate%20ship%20in%20the%20middle%20of%20the%20ocean)
+                    
+    Story: {{story}}
+    Image url markdown: {{gen 'image_url' temperature=0 max_tokens=500}})
+    {{~/block~}}
+                        
+    Story: {{~story~}}
+    {{image_url}}
+    ''')
+
+    story = story(story_idea=story_idea)
+    print(story)
+    return story
+
+def generate_email(email):        
+    priorities = ["low priority", "medium priority", "high priority"]
+
+    email_generator = guidance(
+    '''    
+    {{#block hidden=True~}}
+    Here is the customer message we received: {{email}}
+    Please give it a priority score 
+    priority score: {{select "priority" options=priorities}}
+    {{~/block~}}
+                
+    {{#block hidden=True~}}
+    You are a world class customer support; Your goal is to generate an response based on the customer message and next steps;
+    Here is the customer message to respond: {{email}}
+    Generate an opening & one paragraph of response to the customer message at {{priority}}:
+    {{gen 'email'}} 
+    {{~/block~}}
+
+    {{email}}
+
+    {{#if priority=='high priority'}}Would love to setup a call this/next week, here is the calendly link: https://calendly.com/janik-dotzel{{/if}}
+
+    Best regards
+
+    Janik
+    ''')
+
+    email_response = email_generator(email=email, priorities=priorities)
+    print(email_response)
+
+    return email_response
+
 def generate_image(query):
         
     image_generator = guidance('''
@@ -148,6 +147,8 @@ def generate_image(query):
     print(image_url)
     
     return image_url
+
+
 
 def main():
     st.set_page_config(page_title="Content Generator", page_icon="☁️")
